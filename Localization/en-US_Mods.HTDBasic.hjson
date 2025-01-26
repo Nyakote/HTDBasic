@@ -1,0 +1,45 @@
+# This file will automatically update with entries for new content after a build and reload.
+
+Items: {
+	BaseSword: {
+		DisplayName: Base Sword
+		Tooltip:
+			'''
+			Template of an item
+			Replacing this tooltip is duty 
+			It's snowing on Mt.Fuji
+			'''
+	}
+
+	ExampleGun: {
+		Tooltip: ""
+		DisplayName: Example Gun
+	}
+
+	AK47: {
+		Tooltip: ""
+		DisplayName: A K47
+	}
+
+	BadBone: {
+		DisplayName: Bad Bone
+		Tooltip: ""
+	}
+
+	PonyStuff: {
+		DisplayName: Pony Stuff
+		Tooltip: ""
+	}
+}
+
+Projectiles: {
+	BadSkull.DisplayName: Bad Skull
+	PonyMinion.DisplayName: Pony Minion
+}
+
+Buffs: {
+	PonyBuff: {
+		DisplayName: Pony Buff
+		Description: Mods.HTDBasic.Buffs.PonyBuff.Description
+	}
+}
