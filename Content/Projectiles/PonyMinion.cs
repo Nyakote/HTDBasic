@@ -20,6 +20,7 @@ namespace HTDBasic.Content.Projectiles
 {
     public class PonyMinion : ModProjectile
     {
+        private int shootCooldown = 0;
         public override void SetStaticDefaults()
         {
             Main.projFrames[Projectile.type] = 1;
@@ -29,7 +30,7 @@ namespace HTDBasic.Content.Projectiles
 
             ProjectileID.Sets.MinionSacrificable[Projectile.type] = true;
             ProjectileID.Sets.CultistIsResistantTo[Projectile.type] = true;
-            
+
         }
 
 
@@ -37,9 +38,8 @@ namespace HTDBasic.Content.Projectiles
         {
             Projectile.width = 25;
             Projectile.height = 25;
-
+            Projectile.damage = 50;
             Projectile.tileCollide = false;
-            Projectile.damage = 5;
             Projectile.friendly = true;
             Projectile.minion = true;
             Projectile.DamageType = DamageClass.Summon;
@@ -56,11 +56,12 @@ namespace HTDBasic.Content.Projectiles
 
         public override bool MinionContactDamage()
         {
-            return true;
+            return false;
         }
 
         public override void AI()
         {
+
             Player owner = Main.player[Projectile.owner];
 
             if (owner.dead || !owner.active)
@@ -75,9 +76,23 @@ namespace HTDBasic.Content.Projectiles
             AIGeneral(owner, out Microsoft.Xna.Framework.Vector2 vectorToIdlePosition, out float distanceToIdlePosition);
             AISerchForTarget(owner, out bool foundTarget, out float distanceFromTarget, out Microsoft.Xna.Framework.Vector2 targetCenter);
             AIMovement(foundTarget, distanceFromTarget, targetCenter, distanceToIdlePosition, vectorToIdlePosition);
-        }
 
-        private void AIGeneral(Player owner, out Microsoft.Xna.Framework.Vector2 vectorToIdlePosition, out float distanceToIdlePosition) 
+            Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.Smoke);
+            if (foundTarget && shootCooldown <= 0)
+            {
+                Shoot(targetCenter);
+                shootCooldown = 180; 
+            }
+
+            if (shootCooldown > 0)
+            {
+                shootCooldown--; 
+
+            }
+
+        }
+      
+        private void AIGeneral(Player owner, out Microsoft.Xna.Framework.Vector2 vectorToIdlePosition, out float distanceToIdlePosition)
         {
             Vector2 idlePosition = owner.Center;
             idlePosition.Y -= 100f;
@@ -87,7 +102,7 @@ namespace HTDBasic.Content.Projectiles
             vectorToIdlePosition = idlePosition - Projectile.Center;
             distanceToIdlePosition = vectorToIdlePosition.Length();
 
-            if(Main.myPlayer == owner.whoAmI && distanceToIdlePosition > 200f) 
+            if (Main.myPlayer == owner.whoAmI && distanceToIdlePosition > 1800f)
             {
                 Projectile.position = idlePosition;
                 Projectile.velocity *= 0.1f;
@@ -96,20 +111,20 @@ namespace HTDBasic.Content.Projectiles
 
             float overlapVelocity = 0.04f;
 
-            for (int i = 0; i < Main.maxProjectiles; i++) 
+            for (int i = 0; i < Main.maxProjectiles; i++)
             {
-            Projectile other  = Main.projectile[i];
+                Projectile other = Main.projectile[i];
                 if (
-                    i != Projectile.whoAmI && 
-                    other.active && 
-                    other.owner == Projectile.owner && 
+                    i != Projectile.whoAmI &&
+                    other.active &&
+                    other.owner == Projectile.owner &&
                     Math.Abs(Projectile.position.X - other.position.X) + Math.Abs(Projectile.position.Y - other.position.Y) < Projectile.width
                    )
                 {
                     if (Projectile.position.X < other.position.X) { Projectile.velocity.X -= overlapVelocity; }
                     else { Projectile.velocity.X += overlapVelocity; }
                     if (Projectile.velocity.Y < other.velocity.Y) { Projectile.velocity.Y -= overlapVelocity; }
-                    else {Projectile.velocity.Y += overlapVelocity; }
+                    else { Projectile.velocity.Y += overlapVelocity; }
                 }
             }
         }
@@ -158,34 +173,39 @@ namespace HTDBasic.Content.Projectiles
         }
         private void AIMovement(bool foundTarget, float distanceFromTarget, Vector2 targetCenter, float distanceToIdlePosition, Vector2 vectorToIdlePosition)
         {
-            float speed = 100f;
-            float inertia = 40f;
+            float speed = 10f; // Speed of movement
+            float inertia = 20f; // How quickly it smooths out the movement
+            float orbitDistance = 100f; // Distance from the target while circling
 
-            if(foundTarget)
+            // Timer for orbiting
+            if (!Projectile.localAI[0].Equals(0)) Projectile.localAI[0] += 0.05f;
+            else Projectile.localAI[0] = 0.05f;
+
+            if (foundTarget)
             {
-                if (distanceFromTarget > 40f)
-                {
-                    Vector2 direction = targetCenter - Projectile.Center;
-                    direction.Normalize();
-                    direction *= speed;
-                    
-                    Projectile.velocity = (Projectile.velocity * (inertia - 1) + direction) / inertia;
-                }
-                
+                // Calculate circular movement
+                float angle = Projectile.localAI[0]; // Increment angle over time
+                Vector2 orbitPosition = targetCenter + new Vector2(
+                    orbitDistance * (float)Math.Cos(angle),
+                    orbitDistance * (float)Math.Sin(angle)
+                );
+
+                Vector2 direction = orbitPosition - Projectile.Center;
+                direction.Normalize();
+                direction *= speed;
+
+                // Smoothly adjust the velocity for orbiting
+                Projectile.velocity = (Projectile.velocity * (inertia - 1) + direction) / inertia;
             }
-            if (!foundTarget)
+            else
             {
-                if (distanceToIdlePosition > 1000f)
+                // Default movement toward idle position if no target
+                if (distanceToIdlePosition > 600f)
                 {
-                    speed = 150f;
-                    inertia = 80f;
+                    speed = 40f;
+                    inertia = 60f;
                 }
-                else
-                {
-                    speed = 20f;
-                    inertia = 30f;
 
-                }
                 if (distanceToIdlePosition > 20f)
                 {
                     vectorToIdlePosition.Normalize();
@@ -196,9 +216,31 @@ namespace HTDBasic.Content.Projectiles
                 {
                     Projectile.velocity.X = -0.15f;
                     Projectile.velocity.Y = -0.05f;
-
                 }
             }
+
+
+
         }
+
+    private void Shoot(Vector2 targetCenter)
+        {
+            Vector2 direction = targetCenter - Projectile.Center;
+            direction.Normalize(); // Normalize to get a unit vector
+            direction *= 10f; // Initial speed of the projectile
+
+            // Spawn the projectile
+            Projectile.NewProjectile(
+                Projectile.GetSource_FromThis(),
+                Projectile.Center,
+                direction,
+                ModContent.ProjectileType<HE308mm>(), // Replace with your projectile type
+                Projectile.damage = 80,
+                Projectile.knockBack,
+                Projectile.owner
+            );
+
+        }
+
     }
 }

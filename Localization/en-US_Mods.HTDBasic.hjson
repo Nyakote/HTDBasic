@@ -35,6 +35,13 @@ Items: {
 Projectiles: {
 	BadSkull.DisplayName: Bad Skull
 	PonyMinion.DisplayName: Pony Minion
+	HE308mm.DisplayName: H E308mm
+	PonyMinion_AJ.DisplayName: Pony Minion_ A J
+	PonyMinion_F.DisplayName: Pony Minion_ F
+	PonyMinion_PP.DisplayName: Pony Minion_ P P
+	PonyMinion_RD.DisplayName: Pony Minion_ R D
+	PonyMinion_RR.DisplayName: Pony Minion_ R R
+	PonyMinion_TW.DisplayName: Pony Minion_ T W
 }
 
 Buffs: {
