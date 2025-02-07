@@ -1,35 +1,55 @@
-﻿using HTDBasic.Content.Buffs;
+﻿using Microsoft.Xna.Framework;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
-using Terraria;
-using Microsoft.Xna.Framework;
-using System;
+using HTDBasic.Content.Buffs;
+using HTDBasic.Content.Items.Summon;
+using HTDBasic.Content.Projectiles.Minions;
+using Terraria.ModLoader.Config;
+using HTDBasic.Content.Projectiles;
+using Terraria.GameContent.Biomes;
+using Mono.Cecil;
+using static System.Net.Mime.MediaTypeNames;
+using Terraria.GameContent;
+using HTDBasic.Content.Other;
+
 namespace HTDBasic.Content.Projectiles.Minions
 {
+   
     public class PonyMinion_AJ : ModProjectile
     {
+
+       
+
         public override void SetStaticDefaults()
         {
 
-            Main.projPet[Projectile.type] = true; // Makes the projectile a pet
-            ProjectileID.Sets.MinionTargettingFeature[Projectile.type] = true; // Targeting support
+            Main.projPet[Projectile.type] = true; 
+            ProjectileID.Sets.MinionTargettingFeature[Projectile.type] = true; 
         }
 
         public override void SetDefaults()
         {
             Projectile.width = 24;
             Projectile.height = 24;
-            Projectile.minion = true; // Mark it as a minion
-            Projectile.DamageType = DamageClass.Summon; // Use summon damage
+            Projectile.minion = true; 
+            Projectile.DamageType = DamageClass.Summon; 
             Projectile.friendly = true;
             Projectile.tileCollide = false;
-            Projectile.penetrate = -1; // Infinite penetration
-            Projectile.minionSlots = 1f; // Occupies 1 minion slot
+            Projectile.penetrate = -1; 
+            Projectile.minionSlots = 1f; 
         }
 
         public override void AI()
         {
             Player owner = Main.player[Projectile.owner];
+            HTD_Player htdPlayer = owner.GetModPlayer<HTD_Player>();
 
             if (owner.dead || !owner.active)
             {
@@ -41,11 +61,35 @@ namespace HTDBasic.Content.Projectiles.Minions
             {
                 Projectile.timeLeft = 2;
             }
-            AIGeneral(owner, out Microsoft.Xna.Framework.Vector2 vectorToIdlePosition, out float distanceToIdlePosition);
-            AISerchForTarget(owner, out bool foundTarget, out float distanceFromTarget, out Microsoft.Xna.Framework.Vector2 targetCenter);
+
+            AIGeneral(owner, out Vector2 vectorToIdlePosition, out float distanceToIdlePosition);
+            AISerchForTarget(owner, out bool foundTarget, out float distanceFromTarget, out Vector2 targetCenter);
             AIMovement(foundTarget, distanceFromTarget, targetCenter, distanceToIdlePosition, vectorToIdlePosition);
 
+          
+            if (owner.altFunctionUse == 2 && htdPlayer.SubProjectiles_AJ < htdPlayer.MaxProjectiles_AJ && 
+                htdPlayer.attackCooldown_PonyStaff == 0 && owner.statMana >= 200)
+            {
+             
+                Vector2 spawnPosition = new Vector2(targetCenter.X, targetCenter.Y - 500); 
+                Vector2 velocity = new Vector2(0, 10); 
+
+                Projectile.NewProjectile(
+                    Projectile.GetSource_FromAI(),
+                    spawnPosition,
+                    velocity,
+                    ModContent.ProjectileType<ApplePie>(), 
+                    Projectile.damage,
+                    Projectile.knockBack,
+                    Projectile.owner
+                );
+                htdPlayer.SubProjectiles_AJ++;
+            }
+            if(htdPlayer.attackCooldown_PonyStaff == 0) { htdPlayer.SubProjectiles_AJ = 0; }
+
         }
+
+
         private void AIGeneral(Player owner, out Microsoft.Xna.Framework.Vector2 vectorToIdlePosition, out float distanceToIdlePosition)
         {
             Vector2 idlePosition = owner.Center;

@@ -30,6 +30,11 @@ Items: {
 		DisplayName: Pony Stuff
 		Tooltip: ""
 	}
+
+	PonyStaff: {
+		DisplayName: Pony Staff
+		Tooltip: ""
+	}
 }
 
 Projectiles: {
@@ -42,6 +47,7 @@ Projectiles: {
 	PonyMinion_RD.DisplayName: Pony Minion_ R D
 	PonyMinion_RR.DisplayName: Pony Minion_ R R
 	PonyMinion_TW.DisplayName: Pony Minion_ T W
+	ApplePie.DisplayName: Apple Pie
 }
 
 Buffs: {

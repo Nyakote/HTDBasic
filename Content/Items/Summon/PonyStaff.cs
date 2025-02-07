@@ -1,25 +1,19 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 using HTDBasic.Content.Buffs;
-using HTDBasic.Content.Items.Summon;
 using HTDBasic.Content.Projectiles.Minions;
-using Terraria.ModLoader.Config;
 using HTDBasic.Content.Projectiles;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using Terraria.GameContent.Biomes;
+using HTDBasic.Content.Other;
 
 namespace HTDBasic.Content.Items.Summon
 {
-    public class PonyStuff : ModItem
-    {
+    public class PonyStaff : ModItem
+    {   
         public override void SetStaticDefaults()
         {
             Item.ResearchUnlockCount = 1;
@@ -46,34 +40,63 @@ namespace HTDBasic.Content.Items.Summon
             Item.value = 1;
             Item.shoot = ModContent.ProjectileType<PonyMinion>();
             Item.buffType = ModContent.BuffType<PonyBuff>();
-
         }
-
-
-
 
         public override void ModifyShootStats(Player player, ref Vector2 position, ref Vector2 velocity, ref int type, ref int damage, ref float knockback)
         {
             position = player.Center;
             position.Y -= 100f;
         }
-        private int[] IndexRememberer = new int[3]; 
+
+        public override bool AltFunctionUse(Player player)
+        {
+            return true;
+        }
+
+        public override bool CanUseItem(Player player)
+        {
+            HTD_Player htdPlayer = player.GetModPlayer<HTD_Player>();
+
+            if (player.altFunctionUse == 2 && htdPlayer.attackCooldown_PonyStaff == 0 && player.statMana >= 200)
+            {
+                player.AddBuff(116, 120);
+                player.statMana -= 200; 
+                htdPlayer.attackCooldown_PonyStaff = htdPlayer.CooldownTime_PonyStaff;
+                return true;
+            }
+            else if (player.altFunctionUse == 2 && htdPlayer.attackCooldown_PonyStaff > 0)
+            {
+                Main.NewText("Attack isn't ready! " + (htdPlayer.attackCooldown_PonyStaff / 60) + " seconds left.", Microsoft.Xna.Framework.Color.Red);
+                return false;
+            }
+
+            else if (player.altFunctionUse == 2 && player.statMana < 200)
+            {
+                Main.NewText("This attack requires 200 or more mana points!", Microsoft.Xna.Framework.Color.Red);
+                return false;
+            }
+            else return true;
+        }
+
+
+        private int[] IndexRememberer = new int[3];
         public override bool Shoot(Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback)
         {
             player.AddBuff(Item.buffType, 2);
 
             int[] minionProjectiles = new int[]
             {
-            ModContent.ProjectileType<PonyMinion_RD>(),
-            ModContent.ProjectileType<PonyMinion_RR>(),
-            ModContent.ProjectileType<PonyMinion_F>(),
-            ModContent.ProjectileType<PonyMinion_PP>(),
-            ModContent.ProjectileType<PonyMinion_TW>(),
-            ModContent.ProjectileType<PonyMinion_AJ>()
+                ModContent.ProjectileType<PonyMinion_RD>(),
+                ModContent.ProjectileType<PonyMinion_RR>(),
+                ModContent.ProjectileType<PonyMinion_F>(),
+                ModContent.ProjectileType<PonyMinion_PP>(),
+                ModContent.ProjectileType<PonyMinion_TW>(),
+                ModContent.ProjectileType<PonyMinion_AJ>()
             };
 
             int activeMinionCount = 0;
             int randomIndex = 0;
+
             foreach (Projectile proj in Main.projectile)
             {
                 if (proj.active && proj.owner == player.whoAmI && minionProjectiles.Contains(proj.type))
@@ -90,8 +113,7 @@ namespace HTDBasic.Content.Items.Summon
                 } while (IndexRememberer.Contains(randomIndex));
                 IndexRememberer[activeMinionCount] = randomIndex;
             }
-
-            if (activeMinionCount >= 3)
+            else
             {
                 do
                 {
@@ -111,15 +133,12 @@ namespace HTDBasic.Content.Items.Summon
                 IndexRememberer[1] = IndexRememberer[2];
                 IndexRememberer[2] = randomIndex;
             }
-        
+
             int randomMinionType = minionProjectiles[randomIndex];
             Vector2 spawnPosition = player.Center + new Vector2(0, -50);
             int projectileID = Projectile.NewProjectile(source, spawnPosition, velocity, randomMinionType, damage, knockback, player.whoAmI);
 
             return false;
         }
-
-
     }
-
 }
