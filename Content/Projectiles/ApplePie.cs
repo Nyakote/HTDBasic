@@ -10,15 +10,15 @@ namespace HTDBasic.Content.Projectiles
     
         public override void SetDefaults()
         {
-            Projectile.width = 120;
-            Projectile.height = 48;
+            Projectile.width = 520;
+            Projectile.height = 290;
             Projectile.friendly = true;
             Projectile.hostile = false;
             Projectile.penetrate = -1;
             Projectile.tileCollide = false;
             Projectile.DamageType = DamageClass.Magic;
             Projectile.light = 0.5f;
-            Projectile.timeLeft = 300;
+            Projectile.timeLeft = 60;
             Projectile.aiStyle = 0;
         }
 

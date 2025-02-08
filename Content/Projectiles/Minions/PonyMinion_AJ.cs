@@ -66,14 +66,14 @@ namespace HTDBasic.Content.Projectiles.Minions
             AISerchForTarget(owner, out bool foundTarget, out float distanceFromTarget, out Vector2 targetCenter);
             AIMovement(foundTarget, distanceFromTarget, targetCenter, distanceToIdlePosition, vectorToIdlePosition);
 
-          
-            if (owner.altFunctionUse == 2 && htdPlayer.SubProjectiles_AJ < htdPlayer.MaxProjectiles_AJ && 
-                htdPlayer.attackCooldown_PonyStaff == 0 && owner.statMana >= 200)
+            if (foundTarget)
             {
-             
-                Vector2 spawnPosition = new Vector2(targetCenter.X, targetCenter.Y - 500); 
-                Vector2 velocity = new Vector2(0, 10); 
-
+                Shoot(targetCenter);
+            }
+            if (owner.altFunctionUse == 2 && htdPlayer.DidHadUsed_AJ == true)
+            {
+                Vector2 spawnPosition = new Vector2(owner.Center.X+Main.rand.Next(-1500,1500), owner.Center.Y - 1000);
+                Vector2 velocity = new Vector2(0, 10);
                 Projectile.NewProjectile(
                     Projectile.GetSource_FromAI(),
                     spawnPosition,
@@ -83,9 +83,12 @@ namespace HTDBasic.Content.Projectiles.Minions
                     Projectile.knockBack,
                     Projectile.owner
                 );
-                htdPlayer.SubProjectiles_AJ++;
+
+                htdPlayer.DidHadUsed_AJ = false;
+ 
             }
-            if(htdPlayer.attackCooldown_PonyStaff == 0) { htdPlayer.SubProjectiles_AJ = 0; }
+            
+
 
         }
 
@@ -171,33 +174,14 @@ namespace HTDBasic.Content.Projectiles.Minions
         }
         private void AIMovement(bool foundTarget, float distanceFromTarget, Vector2 targetCenter, float distanceToIdlePosition, Vector2 vectorToIdlePosition)
         {
-            float speed = 10f; // Speed of movement
-            float inertia = 20f; // How quickly it smooths out the movement
-            float orbitDistance = 100f; // Distance from the target while circling
+            float speed = 10f; 
+            float inertia = 20f;
 
-            // Timer for orbiting
+      
             if (!Projectile.localAI[0].Equals(0)) Projectile.localAI[0] += 0.05f;
             else Projectile.localAI[0] = 0.05f;
 
-            if (foundTarget)
-            {
-                // Calculate circular movement
-                float angle = Projectile.localAI[0]; // Increment angle over time
-                Vector2 orbitPosition = targetCenter + new Vector2(
-                    orbitDistance * (float)Math.Cos(angle),
-                    orbitDistance * (float)Math.Sin(angle)
-                );
-
-                Vector2 direction = orbitPosition - Projectile.Center;
-                direction.Normalize();
-                direction *= speed;
-
-                // Smoothly adjust the velocity for orbiting
-                Projectile.velocity = (Projectile.velocity * (inertia - 1) + direction) / inertia;
-            }
-            else
-            {
-                // Default movement toward idle position if no target
+                  
                 if (distanceToIdlePosition > 600f)
                 {
                     speed = 40f;
@@ -215,11 +199,29 @@ namespace HTDBasic.Content.Projectiles.Minions
                     Projectile.velocity.X = -0.15f;
                     Projectile.velocity.Y = -0.05f;
                 }
-            }
-
-
-
         }
 
+        private void Shoot(Vector2 targetCenter)
+        {
+            Player owner = Main.player[Projectile.owner];
+            HTD_Player htdPlayer = owner.GetModPlayer<HTD_Player>();
+            if (htdPlayer.AJ_Passive_cooldown == 0)
+            {
+                Vector2 direction = targetCenter - Projectile.Center;
+                direction.Normalize();
+                direction *= 10f;
+
+                Projectile.NewProjectile(
+                    Projectile.GetSource_FromThis(),
+                    Projectile.Center,
+                    direction,
+                    ModContent.ProjectileType<ApplePie_passive>(),
+                    Projectile.damage = 300,
+                    Projectile.knockBack,
+                    Projectile.owner
+                );
+                htdPlayer.AJ_Passive_cooldown = htdPlayer.AJ_Passive_cooldown_MAX;
+            }
+        }
     }
 }

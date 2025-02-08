@@ -62,6 +62,7 @@ namespace HTDBasic.Content.Items.Summon
                 player.AddBuff(116, 120);
                 player.statMana -= 200; 
                 htdPlayer.attackCooldown_PonyStaff = htdPlayer.CooldownTime_PonyStaff;
+                htdPlayer.DidHadUsed_AJ = true;
                 return true;
             }
             else if (player.altFunctionUse == 2 && htdPlayer.attackCooldown_PonyStaff > 0)

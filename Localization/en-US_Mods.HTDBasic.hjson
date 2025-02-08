@@ -48,6 +48,7 @@ Projectiles: {
 	PonyMinion_RR.DisplayName: Pony Minion_ R R
 	PonyMinion_TW.DisplayName: Pony Minion_ T W
 	ApplePie.DisplayName: Apple Pie
+	ApplePie_passive.DisplayName: Apple Pie_passive
 }
 
 Buffs: {

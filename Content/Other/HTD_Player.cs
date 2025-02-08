@@ -23,15 +23,22 @@ using Terraria.GameContent;
     {
         public class HTD_Player : ModPlayer
         {
-            public int SubProjectiles_AJ = 0;          // Variable that used as a counter for <ApplePie.Projectile>
-            public int attackCooldown_PonyStaff = 0;   // Variable that used as a timer
-            public int CooldownTime_PonyStaff = 360;   // [ 1min ] Variable that sets a cooldown for (AltUse) for <PonyStaff.Item>
-            public int MaxProjectiles_AJ = 1;          // Amount of <ApplePie.Projectile> would we summond on (AltUse)
+        public int SubProjectiles_AJ = 0;         // Variable that used as a counter for <ApplePie.Projectile>
+        public int attackCooldown_PonyStaff = 0;   // Variable that used as a timer
+        public int CooldownTime_PonyStaff = 360;  // [ 1min ] Variable that sets a cooldown for (AltUse) for <PonyStaff.Item>
+        public int MaxProjectiles_AJ = 1;          // Amount of <ApplePie.Projectile> would we summond on (AltUse)
+        public bool DidHadUsed_AJ = false;
+        public int AJ_Passive_cooldown_MAX = 60;
+        public int AJ_Passive_cooldown = 0;
         public override void PreUpdate()
         {
             if (attackCooldown_PonyStaff > 0)
             {
                 attackCooldown_PonyStaff--;            //Reseting Attack Cooldown for the <PonyStaff.Item>
+            }
+            if(AJ_Passive_cooldown > 0)
+            {
+                AJ_Passive_cooldown--;                 //Reseting Attack Cooldown for the <ApplePie_Passive.Projectile>
             }
         }
     }         
